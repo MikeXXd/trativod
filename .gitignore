@@ -1,0 +1,12 @@
+trativod.db
+*.pyc
+__pycache__/
+backup_v1/
+.bash_history
+.cache/
+.config/
+.local/
+.npm/
+.sqlite_history
+.Xauthority
+.xsession-errors*
