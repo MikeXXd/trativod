@@ -2,8 +2,6 @@ import serial
 import time
 import logging
 import sqlite3
-import subprocess
-from datetime import datetime
 
 logging.basicConfig(
     filename="/var/log/pump_controller.log",
@@ -26,60 +24,7 @@ DB_PATH = "/home/mike5d/trativod.db"
 samples = []
 last_save = time.time()
 
-
-def check_pump_timeout():
-
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT value
-        FROM settings
-        WHERE key='pump_state'
-    """)
-
-    row = cur.fetchone()
-
-    if not row or row[0] != "ON":
-        conn.close()
-        return
-
-    cur.execute("""
-        SELECT value
-        FROM settings
-        WHERE key='pump_off_deadline'
-    """)
-
-    row = cur.fetchone()
-
-    if not row or not row[0]:
-        conn.close()
-        return
-
-    try:
-        deadline = datetime.strptime(
-            row[0],
-            "%Y-%m-%d %H:%M:%S"
-        )
-    except Exception as e:
-        logging.error(f"Deadline parse error: {e}")
-        conn.close()
-        return
-
-    if datetime.now() >= deadline:
-
-        logging.info("Pump timeout reached -> OFF")
-
-        subprocess.run(
-            ["python3", "/home/mike5d/pump.py", "off"]
-        )
-
-    conn.close()
-
-
 while True:
-
-    check_pump_timeout()
 
     if ser.read(1) == b'\xFF':
 
@@ -92,10 +37,7 @@ while True:
             checksum = data[2]
 
             distance_mm = high * 256 + low
-
-            calc_checksum = (
-                0xFF + high + low
-            ) & 0xFF
+            calc_checksum = (0xFF + high + low) & 0xFF
 
             if checksum == calc_checksum:
 
@@ -107,7 +49,6 @@ while True:
                 )
 
             else:
-
                 logging.warning("Chyba checksum")
 
     now = time.time()

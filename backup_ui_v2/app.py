@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect
 import sqlite3
 import subprocess
-from datetime import datetime
 
 app = Flask(__name__)
 
@@ -36,7 +35,7 @@ def index():
 
     pump_row = cur.fetchone()
 
-    pump_state = "OFF"
+    pump_state = "UNKNOWN"
 
     if pump_row:
         pump_state = pump_row[0]
@@ -54,84 +53,33 @@ def index():
     if auto_row:
         auto_mode = auto_row[0]
 
-    cur.execute("""
-        SELECT value
-        FROM settings
-        WHERE key='pump_off_deadline'
-    """)
-
-    deadline_row = cur.fetchone()
-
-    remaining_seconds = 0
-
-    if (
-        deadline_row
-        and deadline_row[0]
-        and pump_state == "ON"
-    ):
-        try:
-
-            deadline = datetime.strptime(
-                deadline_row[0],
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-            remaining_seconds = int(
-                (deadline - datetime.now()).total_seconds()
-            )
-
-            if remaining_seconds < 0:
-                remaining_seconds = 0
-
-        except:
-            remaining_seconds = 0
-
     conn.close()
 
     return render_template(
         "index.html",
         level_cm=level_cm,
         pump_state=pump_state,
-        auto_mode=auto_mode,
-        remaining_seconds=remaining_seconds
+        auto_mode=auto_mode
     )
 
+@app.route("/pump/on")
+def pump_on():
 
-@app.route("/pump/toggle")
-def pump_toggle():
-
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT value
-        FROM settings
-        WHERE key='pump_state'
-    """)
-
-    row = cur.fetchone()
-
-    state = "OFF"
-
-    if row:
-        state = row[0]
-
-    conn.close()
-
-    if state == "ON":
-
-        subprocess.run(
-            ["python3", "/home/mike5d/pump.py", "off"]
-        )
-
-    else:
-
-        subprocess.run(
-            ["python3", "/home/mike5d/pump.py", "on"]
-        )
+    subprocess.run(
+        ["python3", "/home/mike5d/pump.py", "on"]
+    )
 
     return redirect("/")
 
+
+@app.route("/pump/off")
+def pump_off():
+
+    subprocess.run(
+        ["python3", "/home/mike5d/pump.py", "off"]
+    )
+
+    return redirect("/")
 
 @app.route("/auto/toggle")
 def auto_toggle():
@@ -163,7 +111,6 @@ def auto_toggle():
     conn.close()
 
     return redirect("/")
-
 
 if __name__ == "__main__":
 
