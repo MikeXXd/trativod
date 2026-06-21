@@ -1,12 +1,38 @@
-trativod.db
-*.pyc
+# Python
 __pycache__/
-backup_v1/
-.bash_history
+*.pyc
+
+# SQLite databáze
+*.db
+
+# Raspberry / Linux
+.sudo_as_admin_successful
+
+# VS Code
+.vscode/
+
+# Lokální zálohy
+backup_*/
+*.save
+*.save.*
+
+# Staré verze souborů
+*_backup.py
+*_before_*.py
+*_v1.py
+*_v2.py
+pump_new.py
+
+# Testy
+test_*.py
+
+# Logy
+*.log
+
+# Linux user profile
+.*
+!.gitignore
+
 .cache/
 .config/
 .local/
-.npm/
-.sqlite_history
-.Xauthority
-.xsession-errors*
