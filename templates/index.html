@@ -8,6 +8,8 @@
 
 <title>Trativod</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 
 body {
@@ -32,6 +34,23 @@ button {
     min-width: 280px;
 }
 
+.chart-container {
+    width: 95%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.range-buttons {
+    margin: 20px;
+}
+
+.range-buttons button {
+    min-width: 70px;
+    margin: 4px;
+    font-size: 18px;
+    padding: 10px;
+}
+
 </style>
 
 </head>
@@ -44,6 +63,20 @@ button {
 
 <div class="value">
     {{ level_cm }} cm
+</div>
+
+<h2>Historie</h2>
+
+<div class="range-buttons">
+    <button onclick="loadHistory('1h')">1h</button>
+    <button onclick="loadHistory('24h')">24h</button>
+    <button onclick="loadHistory('3d')">3d</button>
+    <button onclick="loadHistory('1w')">1w</button>
+    <button onclick="loadHistory('1m')">1m</button>
+</div>
+
+<div class="chart-container">
+    <canvas id="historyChart"></canvas>
 </div>
 
 <h2>Čerpadlo</h2>
@@ -59,15 +92,17 @@ button {
 </div>
 
 <a href="/pump/toggle">
-    <button id="pumpButton">
 
-        {% if pump_state == "ON" %}
-        Vypnout
-        {% else %}
-        Zapnout čerpadlo
-        {% endif %}
+<button id="pumpButton">
 
-    </button>
+{% if pump_state == "ON" %}
+Vypnout
+{% else %}
+Zapnout čerpadlo
+{% endif %}
+
+</button>
+
 </a>
 
 <br><br>
@@ -85,9 +120,11 @@ button {
 </div>
 
 <a href="/auto/toggle">
-    <button>
-        AUTO ON/OFF
-    </button>
+
+<button>
+AUTO ON/OFF
+</button>
+
 </a>
 
 <script>
@@ -121,6 +158,72 @@ function updateButton() {
 
 updateButton();
 setInterval(updateButton, 1000);
+
+let chart = null;
+
+async function loadHistory(range) {
+
+    const response =
+        await fetch("/history?range=" + range);
+
+    const data =
+        await response.json();
+
+    const labels =
+        data.map(item => item.time);
+
+    const values =
+        data.map(item => item.level);
+
+    const ctx =
+        document.getElementById("historyChart");
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+
+        type: 'line',
+
+        data: {
+
+            labels: labels,
+
+            datasets: [{
+                label: 'Hladina (cm)',
+                data: values,
+                tension: 0.2
+            }]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: true,
+
+            scales: {
+
+                y: {
+                    title: {
+                        display: true,
+                        text: 'cm'
+                    }
+                }
+            },
+
+            plugins: {
+
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+}
+
+loadHistory('24h');
 
 </script>
 

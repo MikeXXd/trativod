@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, jsonify, request
 import sqlite3
 import subprocess
 from datetime import datetime
@@ -6,6 +6,96 @@ from datetime import datetime
 app = Flask(__name__)
 
 DB_PATH = "/home/mike5d/trativod.db"
+
+
+def get_history(range_name):
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    if range_name == "1h":
+
+        cur.execute("""
+            SELECT
+                timestamp,
+                ROUND(distance_mm / 10.0, 1)
+            FROM measurements
+            WHERE timestamp >= datetime('now', '-1 hour')
+            ORDER BY timestamp
+        """)
+
+    elif range_name == "24h":
+
+        cur.execute("""
+            SELECT
+                substr(timestamp,1,16) as bucket,
+                ROUND(avg(distance_mm) / 10.0, 1)
+            FROM measurements
+            WHERE timestamp >= datetime('now', '-24 hour')
+            GROUP BY bucket
+            ORDER BY bucket
+        """)
+
+    elif range_name == "3d":
+
+        cur.execute("""
+            SELECT
+                strftime(
+                    '%Y-%m-%d %H:',
+                    timestamp
+                ) ||
+                printf(
+                    '%02d',
+                    (cast(strftime('%M',timestamp) as integer)/5)*5
+                ) as bucket,
+                ROUND(avg(distance_mm) / 10.0, 1)
+            FROM measurements
+            WHERE timestamp >= datetime('now', '-3 day')
+            GROUP BY bucket
+            ORDER BY bucket
+        """)
+
+    elif range_name == "1w":
+
+        cur.execute("""
+            SELECT
+                strftime(
+                    '%Y-%m-%d %H:',
+                    timestamp
+                ) ||
+                printf(
+                    '%02d',
+                    (cast(strftime('%M',timestamp) as integer)/15)*15
+                ) as bucket,
+                ROUND(avg(distance_mm) / 10.0, 1)
+            FROM measurements
+            WHERE timestamp >= datetime('now', '-7 day')
+            GROUP BY bucket
+            ORDER BY bucket
+        """)
+
+    else:
+
+        cur.execute("""
+            SELECT
+                strftime('%Y-%m-%d %H:00', timestamp),
+                ROUND(avg(distance_mm) / 10.0, 1)
+            FROM measurements
+            WHERE timestamp >= datetime('now', '-30 day')
+            GROUP BY strftime('%Y-%m-%d %H', timestamp)
+            ORDER BY strftime('%Y-%m-%d %H', timestamp)
+        """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {
+            "time": row[0],
+            "level": row[1]
+        }
+        for row in rows
+    ]
 
 
 @app.route("/")
@@ -35,11 +125,7 @@ def index():
     """)
 
     pump_row = cur.fetchone()
-
-    pump_state = "OFF"
-
-    if pump_row:
-        pump_state = pump_row[0]
+    pump_state = pump_row[0] if pump_row else "OFF"
 
     cur.execute("""
         SELECT value
@@ -48,11 +134,7 @@ def index():
     """)
 
     auto_row = cur.fetchone()
-
-    auto_mode = "0"
-
-    if auto_row:
-        auto_mode = auto_row[0]
+    auto_mode = auto_row[0] if auto_row else "0"
 
     cur.execute("""
         SELECT value
@@ -97,6 +179,19 @@ def index():
     )
 
 
+@app.route("/history")
+def history():
+
+    range_name = request.args.get(
+        "range",
+        "24h"
+    )
+
+    return jsonify(
+        get_history(range_name)
+    )
+
+
 @app.route("/pump/toggle")
 def pump_toggle():
 
@@ -110,13 +205,9 @@ def pump_toggle():
     """)
 
     row = cur.fetchone()
-
-    state = "OFF"
-
-    if row:
-        state = row[0]
-
     conn.close()
+
+    state = row[0] if row else "OFF"
 
     if state == "ON":
 
@@ -147,10 +238,7 @@ def auto_toggle():
 
     row = cur.fetchone()
 
-    current = "0"
-
-    if row:
-        current = row[0]
+    current = row[0] if row else "0"
 
     new_value = "1" if current == "0" else "0"
 
