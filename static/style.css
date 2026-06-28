@@ -1,0 +1,42 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.value {
+    font-size: 60px;
+    font-weight: bold;
+}
+
+.status {
+    font-size: 40px;
+    margin: 20px;
+}
+
+button {
+    font-size: 24px;
+    padding: 15px;
+    min-width: 280px;
+}
+
+.chart-container {
+    width: 95%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.range-buttons {
+    margin: 20px;
+}
+
+.range-buttons button {
+    min-width: 70px;
+    margin: 4px;
+    font-size: 18px;
+    padding: 10px;
+}
+
+canvas {
+    max-height: 420px;
+}

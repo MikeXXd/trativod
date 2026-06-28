@@ -1,67 +1,25 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="cs">
 
+<head>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="10">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Trativod</title>
 
+<link rel="stylesheet" href="/static/style.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin-top: 30px;
-}
-
-.value {
-    font-size: 60px;
-    font-weight: bold;
-}
-
-.status {
-    font-size: 40px;
-    margin: 20px;
-}
-
-button {
-    font-size: 24px;
-    padding: 15px;
-    min-width: 280px;
-}
-
-.chart-container {
-    width: 95%;
-    max-width: 1000px;
-    margin: auto;
-}
-
-.range-buttons {
-    margin: 20px;
-}
-
-.range-buttons button {
-    min-width: 70px;
-    margin: 4px;
-    font-size: 18px;
-    padding: 10px;
-}
-
-</style>
 
 </head>
 
-<body>
+<body data-remaining="{{ remaining_seconds }}">
 
 <h1>Trativod</h1>
 
 <h2>Aktuální hladina</h2>
 
-<div class="value">
+<div id="levelValue" class="value">
     {{ level_cm }} cm
 </div>
 
@@ -81,18 +39,15 @@ button {
 
 <h2>Čerpadlo</h2>
 
-<div class="status">
-
+<div id="pumpStatus" class="status">
 {% if pump_state == "ON" %}
 🔴 ZAPNUTO
 {% else %}
 🟢 VYPNUTO
 {% endif %}
-
 </div>
 
-<a href="/pump/toggle">
-
+<a id="pumpLink" href="/pump/toggle">
 <button id="pumpButton">
 
 {% if pump_state == "ON" %}
@@ -102,14 +57,13 @@ Zapnout čerpadlo
 {% endif %}
 
 </button>
-
 </a>
 
 <br><br>
 
 <h2>Režim</h2>
 
-<div class="status">
+<div id="autoStatus" class="status">
 
 {% if auto_mode == "1" %}
 🟢 AUTO
@@ -120,112 +74,16 @@ Zapnout čerpadlo
 </div>
 
 <a href="/auto/toggle">
-
 <button>
 AUTO ON/OFF
 </button>
-
 </a>
 
-<script>
-
-let remaining = {{ remaining_seconds }};
-
-function updateButton() {
-
-    const btn = document.getElementById("pumpButton");
-
-    if (!btn) {
-        return;
-    }
-
-    if (remaining <= 0) {
-        return;
-    }
-
-    const minutes = Math.floor(remaining / 60);
-    const seconds = remaining % 60;
-
-    btn.innerText =
-        "Vypnout (" +
-        String(minutes).padStart(2, "0") +
-        ":" +
-        String(seconds).padStart(2, "0") +
-        ")";
-
-    remaining--;
-}
-
-updateButton();
-setInterval(updateButton, 1000);
-
-let chart = null;
-
-async function loadHistory(range) {
-
-    const response =
-        await fetch("/history?range=" + range);
-
-    const data =
-        await response.json();
-
-    const labels =
-        data.map(item => item.time);
-
-    const values =
-        data.map(item => item.level);
-
-    const ctx =
-        document.getElementById("historyChart");
-
-    if (chart) {
-        chart.destroy();
-    }
-
-    chart = new Chart(ctx, {
-
-        type: 'line',
-
-        data: {
-
-            labels: labels,
-
-            datasets: [{
-                label: 'Hladina (cm)',
-                data: values,
-                tension: 0.2
-            }]
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: true,
-
-            scales: {
-
-                y: {
-                    title: {
-                        display: true,
-                        text: 'cm'
-                    }
-                }
-            },
-
-            plugins: {
-
-                legend: {
-                    display: true
-                }
-            }
-        }
-    });
-}
-
-loadHistory('24h');
-
-</script>
+<script src="/static/chart.js"></script>
+<script src="/static/status.js"></script>
+<script src="/static/countdown.js"></script>
+<script src="/static/app.js"></script>
 
 </body>
+
 </html>
