@@ -30,11 +30,18 @@ button {
     margin: 20px;
 }
 
-.range-buttons button {
+.range-button {
     min-width: 70px;
     margin: 4px;
-    font-size: 18px;
     padding: 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.range-button.active {
+    background: #1976d2;
+    color: white;
+    font-weight: bold;
 }
 
 canvas {

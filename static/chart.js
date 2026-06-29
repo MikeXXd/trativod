@@ -2,11 +2,28 @@ let chart = null;
 
 let currentRange = "24h";
 
+function updateActiveButton() {
+
+    document
+        .querySelectorAll(".range-button")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.range === currentRange
+            );
+
+        });
+
+}
+
 async function loadHistory(range = currentRange) {
 
     currentRange = range;
 
     localStorage.setItem("historyRange", range);
+
+    updateActiveButton();
 
     const response = await fetch("/history?range=" + range);
 
@@ -34,7 +51,9 @@ async function loadHistory(range = currentRange) {
 
                     data: values,
 
-                    tension: 0.2
+                    tension: 0.2,
+
+                    pointRadius: 0
 
                 }]
 
@@ -73,7 +92,6 @@ async function loadHistory(range = currentRange) {
     } else {
 
         chart.data.labels = labels;
-
         chart.data.datasets[0].data = values;
 
         chart.update("none");
@@ -88,8 +106,15 @@ async function refreshChart() {
         return;
     }
 
-    console.log("refresh", currentRange);
-
     await loadHistory(currentRange);
 
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    currentRange =
+        localStorage.getItem("historyRange") || "24h";
+
+    updateActiveButton();
+
+});

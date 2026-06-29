@@ -26,11 +26,17 @@
 <h2>Historie</h2>
 
 <div class="range-buttons">
-    <button onclick="loadHistory('1h')">1h</button>
-    <button onclick="loadHistory('24h')">24h</button>
-    <button onclick="loadHistory('3d')">3d</button>
-    <button onclick="loadHistory('1w')">1w</button>
-    <button onclick="loadHistory('1m')">1m</button>
+
+    <button class="range-button" data-range="1h" onclick="loadHistory('1h')">1h</button>
+
+    <button class="range-button" data-range="24h" onclick="loadHistory('24h')">24h</button>
+
+    <button class="range-button" data-range="3d" onclick="loadHistory('3d')">3d</button>
+
+    <button class="range-button" data-range="1w" onclick="loadHistory('1w')">1w</button>
+
+    <button class="range-button" data-range="1m" onclick="loadHistory('1m')">1m</button>
+
 </div>
 
 <div class="chart-container">
@@ -48,13 +54,11 @@
 </div>
 
 <button id="pumpButton" type="button">
-
 {% if pump_state == "ON" %}
 Vypnout
 {% else %}
 Zapnout čerpadlo
 {% endif %}
-
 </button>
 
 <br><br>
@@ -62,13 +66,11 @@ Zapnout čerpadlo
 <h2>Režim</h2>
 
 <div id="autoStatus" class="status">
-
 {% if auto_mode == "1" %}
 🟢 AUTO
 {% else %}
 ⚪ MANUAL
 {% endif %}
-
 </div>
 
 <a href="/auto/toggle">
