@@ -1,5 +1,7 @@
 let remaining = 0;
 
+let lastLevel = null;
+
 async function refreshStatus() {
 
     try {
@@ -15,24 +17,44 @@ async function refreshStatus() {
         remaining = status.remaining_seconds;
 
         const level = document.getElementById("levelValue");
+
         if (level) {
+
             level.textContent = status.level_cm + " cm";
+
         }
 
+        if (
+            lastLevel !== null &&
+            lastLevel !== status.level_cm
+        ) {
+
+            refreshChart();
+
+        }
+
+        lastLevel = status.level_cm;
+
         const pumpStatus = document.getElementById("pumpStatus");
+
         if (pumpStatus) {
+
             pumpStatus.textContent =
                 status.pump_state === "ON"
                     ? "🔴 ZAPNUTO"
                     : "🟢 VYPNUTO";
+
         }
 
         const autoStatus = document.getElementById("autoStatus");
+
         if (autoStatus) {
+
             autoStatus.textContent =
                 status.auto_mode === "1"
                     ? "🟢 AUTO"
                     : "⚪ MANUAL";
+
         }
 
     } catch (err) {
@@ -55,8 +77,6 @@ async function togglePump(event) {
 
     await refreshStatus();
 
-    setTimeout(refreshChart, 300);
-
 }
 
 function startStatusRefresh() {
@@ -65,10 +85,16 @@ function startStatusRefresh() {
 
     setInterval(refreshStatus, 10000);
 
-    const button = document.getElementById("pumpButton");
+    const button =
+        document.getElementById("pumpButton");
 
     if (button) {
-        button.addEventListener("click", togglePump);
+
+        button.addEventListener(
+            "click",
+            togglePump
+        );
+
     }
 
 }

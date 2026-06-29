@@ -9,10 +9,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startCountdown();
 
-    setInterval(() => {
-
-        refreshChart();
-
-    }, 10000);
-
 });
