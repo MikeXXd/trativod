@@ -17,6 +17,32 @@ function updateActiveButton() {
 
 }
 
+function getTickLimit() {
+
+    switch (currentRange) {
+
+        case "1h":
+            return 6;
+
+        case "24h":
+            return 12;
+
+        case "3d":
+            return 12;
+
+        case "1w":
+            return 7;
+
+        case "1m":
+            return 10;
+
+        default:
+            return 10;
+
+    }
+
+}
+
 async function loadHistory(range = currentRange) {
 
     currentRange = range;
@@ -69,6 +95,16 @@ async function loadHistory(range = currentRange) {
 
                 scales: {
 
+                    x: {
+
+                        ticks: {
+
+                            maxTicksLimit: getTickLimit()
+
+                        }
+
+                    },
+
                     y: {
 
                         reverse: true,
@@ -93,6 +129,9 @@ async function loadHistory(range = currentRange) {
 
         chart.data.labels = labels;
         chart.data.datasets[0].data = values;
+
+        chart.options.scales.x.ticks.maxTicksLimit =
+            getTickLimit();
 
         chart.update("none");
 
