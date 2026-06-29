@@ -68,7 +68,7 @@ def pump_toggle():
             ]
         )
 
-    return redirect("/")
+    return jsonify({"success": True})
 
 
 @app.route("/auto/toggle")

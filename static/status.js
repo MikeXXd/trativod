@@ -15,13 +15,11 @@ async function refreshStatus() {
         remaining = status.remaining_seconds;
 
         const level = document.getElementById("levelValue");
-
         if (level) {
             level.textContent = status.level_cm + " cm";
         }
 
         const pumpStatus = document.getElementById("pumpStatus");
-
         if (pumpStatus) {
             pumpStatus.textContent =
                 status.pump_state === "ON"
@@ -30,7 +28,6 @@ async function refreshStatus() {
         }
 
         const autoStatus = document.getElementById("autoStatus");
-
         if (autoStatus) {
             autoStatus.textContent =
                 status.auto_mode === "1"
@@ -46,10 +43,32 @@ async function refreshStatus() {
 
 }
 
+async function togglePump(event) {
+
+    event.preventDefault();
+
+    const response = await fetch("/pump/toggle");
+
+    if (!response.ok) {
+        return;
+    }
+
+    await refreshStatus();
+
+    setTimeout(refreshChart, 300);
+
+}
+
 function startStatusRefresh() {
 
     refreshStatus();
 
     setInterval(refreshStatus, 10000);
+
+    const button = document.getElementById("pumpButton");
+
+    if (button) {
+        button.addEventListener("click", togglePump);
+    }
 
 }

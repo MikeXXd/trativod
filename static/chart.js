@@ -6,10 +6,14 @@ async function loadHistory(range = currentRange) {
 
     currentRange = range;
 
+    localStorage.setItem("historyRange", range);
+
     const response = await fetch("/history?range=" + range);
+
     const data = await response.json();
 
     const labels = data.map(p => p.time);
+
     const values = data.map(p => p.level);
 
     if (!chart) {
@@ -22,7 +26,7 @@ async function loadHistory(range = currentRange) {
 
             data: {
 
-                labels: labels,
+                labels,
 
                 datasets: [{
 
@@ -69,10 +73,23 @@ async function loadHistory(range = currentRange) {
     } else {
 
         chart.data.labels = labels;
+
         chart.data.datasets[0].data = values;
 
         chart.update("none");
 
     }
+
+}
+
+async function refreshChart() {
+
+    if (!chart) {
+        return;
+    }
+
+    console.log("refresh", currentRange);
+
+    await loadHistory(currentRange);
 
 }
